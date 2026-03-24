@@ -4,11 +4,11 @@ import logger from '../utils/logger';
 /**
  * Service to interact with the WhatsApp Cloud API.
  */
-export const sendWhatsAppMessage = async (phoneNumberId: string, to: string, text: string): Promise<void> => {
+export const sendWhatsAppMessage = async (phoneNumberId: string, to: string, text: string, customToken?: string): Promise<void> => {
   try {
-    const token = process.env.WHATSAPP_API_TOKEN;
+    const token = customToken || process.env.WHATSAPP_API_TOKEN;
     if (!token) {
-      throw new Error('WHATSAPP_API_TOKEN is not configured');
+      throw new Error('No WHATSAPP_API_TOKEN provided and no fallback configured');
     }
 
     const version = process.env.WHATSAPP_API_VERSION || 'v17.0';

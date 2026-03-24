@@ -1,4 +1,5 @@
 import { Bell, Search } from "lucide-react";
+import { UserButton } from "@clerk/nextjs";
 
 export function Topbar() {
   return (
@@ -9,7 +10,7 @@ export function Topbar() {
           <input
             type="text"
             placeholder="Search conversations, products..."
-            className="h-9 w-full rounded-md border border-white/10 bg-black/20 backdrop-blur-md pl-9 pr-4 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-emerald-500/50 focus:bg-black/30 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 transition-colors shadow-inner"
+            className="h-9 w-full rounded-md border border-white/10 bg-black/20 backdrop-blur-md pl-9 pr-4 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-maroon-500/50 focus:bg-black/30 focus:outline-none focus:ring-1 focus:ring-maroon-500/50 transition-colors shadow-inner"
           />
         </div>
       </div>
@@ -17,8 +18,9 @@ export function Topbar() {
       <div className="flex items-center gap-4">
         <button className="relative flex h-9 w-9 items-center justify-center rounded-md text-zinc-400 hover:bg-white/10 hover:text-white transition-colors">
           <Bell className="h-5 w-5" />
-          <span className="absolute top-2 right-2.5 h-1.5 w-1.5 rounded-full bg-emerald-500 border border-transparent shadow-[0_0_10px_rgba(16,185,129,0.8)]"></span>
+          <span className="absolute top-2 right-2.5 h-1.5 w-1.5 rounded-full bg-maroon-500 border border-transparent shadow-[0_0_10px_rgba(255,131,113,0.8)]"></span>
         </button>
+        <UserButton />
       </div>
     </header>
   );

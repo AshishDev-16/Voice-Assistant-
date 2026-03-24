@@ -3,6 +3,8 @@ import logger from '../utils/logger';
 import { generateAiResponse } from './ai.service';
 import { sendWhatsAppMessage } from './whatsapp.service';
 import mongoose from 'mongoose';
+import { Content } from '@google/generative-ai';
+import { User } from '../models/User';
 
 // Simple Mongoose schema for storing Conversation data
 const messageSchema = new mongoose.Schema({
@@ -17,7 +19,7 @@ const messageSchema = new mongoose.Schema({
 const Message = mongoose.model('Message', messageSchema);
 
 /**
- * Orchestrates the flow: DB storage -> AI Generation -> Sending Reply
+ * Orchestrates the flow: DB storage -> History Retrieval -> AI Generation -> Sending Reply
  */
 export const processIncomingMessage = async (parsedMsg: ParsedMessage): Promise<void> => {
   try {
@@ -36,20 +38,74 @@ export const processIncomingMessage = async (parsedMsg: ParsedMessage): Promise<
       logger.info('Inbound message saved to database');
     } catch (dbErr) {
       logger.error('Error saving inbound message to DB:', dbErr);
-      // We choose to proceed even if DB save fails to ensure the user gets a reply
     }
 
-    // 2. Call AI service to generate a response
-    const aiReply = await generateAiResponse(parsedMsg.messageText, parsedMsg.customerPhone);
+    // 1.5 Fetch user profile based on the WhatsApp Business Phone ID
+    const user = await User.findOne({ waPhoneId: parsedMsg.phoneNumberId });
+    let waToken: string | undefined = undefined;
 
-    // 3. Send the reply back via WhatsApp Cloud API
-    await sendWhatsAppMessage(parsedMsg.phoneNumberId, parsedMsg.customerPhone, aiReply);
+    if (user) {
+      waToken = user.waToken || undefined;
+      const limit = user.plan === 'starter' ? 1000 : user.plan === 'pro' ? 10000 : Infinity;
+      
+      if (user.messageCount >= limit) {
+        logger.info(`Rate limit reached for user ${user.clerkId} on plan ${user.plan}`);
+        try {
+          await sendWhatsAppMessage(
+            parsedMsg.phoneNumberId,
+            parsedMsg.customerPhone,
+            "Our AI agent is currently offline. Please leave a message and our team will get back to you.",
+            waToken
+          );
+        } catch (err) {
+          logger.error('Failed to send limit exceeded message', err);
+        }
+        return;
+      }
+    }
 
-    // 4. Store the outbound message in MongoDB
+    // 2. Fetch recent history for context (last 10 messages)
+    let history: Content[] = [];
+    try {
+      const recentMessages = await Message.find({ customerPhone: parsedMsg.customerPhone })
+        .sort({ timestamp: -1 })
+        .limit(11) // Get current + 10 previous
+        .lean();
+
+      // Reverse to get chronological order and remove current message (it's handled by Gemini as the new prompt)
+      const prevMessages = recentMessages.slice(1).reverse();
+      
+      history = prevMessages.map(msg => ({
+        role: msg.direction === 'inbound' ? 'user' : 'model',
+        parts: [{ text: msg.messageText }]
+      }));
+    } catch (histErr) {
+      logger.error('Error fetching chat history:', histErr);
+    }
+
+    // 3. Call AI service to generate a response
+    const aiReply = await generateAiResponse(
+      parsedMsg.messageText, 
+      parsedMsg.customerPhone, 
+      history,
+      user?.aiPersonality || "You are a helpful WhatsApp AI Agent for a modern SaaS company called 'AgentFlow'. Your goal is to assist customers with queries.",
+      user?.knowledgeBase || "No specific business knowledge provided yet."
+    );
+
+    // 4. Send the reply back via WhatsApp Cloud API
+    await sendWhatsAppMessage(parsedMsg.phoneNumberId, parsedMsg.customerPhone, aiReply, waToken);
+
+    if (user) {
+      // Increment user's message usage count
+      user.messageCount += 1;
+      await user.save();
+    }
+
+    // 5. Store the outbound message in MongoDB
     try {
       await Message.create({
         customerPhone: parsedMsg.customerPhone,
-        messageId: `outbound-${Date.now()}`, // Typically you'd capture the actual ID from the send response
+        messageId: `outbound-${Date.now()}`,
         messageText: aiReply,
         messageType: 'text',
         direction: 'outbound'
