@@ -1,25 +1,53 @@
+import { GoogleGenerativeAI, Content } from '@google/generative-ai';
 import logger from '../utils/logger';
 
+// Initialize the Gemini SDK
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+
 /**
- * Mocked AI service.
- * In a real application, this would call OpenAI API to generate a reply.
+ * Generates a real AI response using Google Gemini with chat history.
  */
-export const generateAiResponse = async (userMessage: string, customerPhone: string): Promise<string> => {
-  logger.info(`Generating AI response for message: "${userMessage}"`);
-  
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  // Basic mocked response logic based on keywords
-  const lowerMsg = userMessage.toLowerCase();
-  
-  if (lowerMsg.includes('price') || lowerMsg.includes('cost')) {
-    return 'Our basic plan starts at $29/month. You can find more details on our pricing page!';
-  } else if (lowerMsg.includes('hello') || lowerMsg.includes('hi')) {
-    return 'Hello! How can I assist you with our WhatsApp automation tools today?';
-  } else if (lowerMsg.includes('order')) {
-    return 'I can help you with your order. Could you please provide your order ID?';
-  } else {
-    return `Thank you for your message: "${userMessage}". Our team or AI will assist you shortly.`;
+export const generateAiResponse = async (
+  userMessage: string, 
+  customerPhone: string,
+  history: Content[] = [],
+  aiPersonality: string = "You are a helpful WhatsApp AI Agent for a modern SaaS company called 'AgentFlow'. Your goal is to assist customers with queries.",
+  knowledgeBase: string = ""
+): Promise<string> => {
+  try {
+    logger.info(`Generating Gemini AI response for ${customerPhone}. History length: ${history.length}`);
+
+    if (!process.env.GEMINI_API_KEY) {
+      logger.error('GEMINI_API_KEY is missing. Falling back to mock response.');
+      return "I'm sorry, my AI brain is currently offline. Please try again later!";
+    }
+
+    const systemInstruction = `
+      ${aiPersonality}
+      
+      Here is your business knowledge base. Use this information to answer user queries accurately. If the information is not here, you must politely say you do not know.
+      KNOWLEDGE BASE:
+      ---
+      ${knowledgeBase}
+      ---
+    `;
+
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-1.5-flash",
+      systemInstruction
+    });
+
+    const chat = model.startChat({
+      history: history,
+    });
+
+    const result = await chat.sendMessage(userMessage);
+    const response = await result.response;
+    const text = response.text();
+
+    return text || "I'm sorry, I couldn't process that. How else can I help you?";
+  } catch (error) {
+    logger.error('Error generating AI response with Gemini:', error);
+    return "I'm having trouble thinking right now. Could you please repeat that?";
   }
 };
