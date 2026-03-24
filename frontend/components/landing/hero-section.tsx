@@ -18,8 +18,8 @@ export function HeroSection() {
             transition={{ duration: 0.5 }}
             className="inline-flex items-center rounded-full border border-white/10 bg-white/5 shadow-2xl backdrop-blur-md px-3 py-1 text-sm font-medium text-white mb-8 cursor-default pointer-events-auto"
           >
-            <span className="flex h-2 w-2 rounded-full bg-emerald-500 mr-2 animate-pulse"></span>
-            WhatsApp Cloud API V17 Supported
+            <span className="flex h-2 w-2 rounded-full bg-maroon-500 mr-2 animate-pulse"></span>
+            Real-Time Voice Beta
           </motion.div>
 
           <motion.h1 
@@ -28,9 +28,9 @@ export function HeroSection() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-5xl md:text-7xl font-extrabold tracking-tight text-white mb-6 drop-shadow-2xl pointer-events-auto"
           >
-            AI That Sells For You <br className="hidden md:block"/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
-              On WhatsApp
+            AI That Calls For You <br className="hidden md:block"/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-maroon-400 to-white">
+              In Real-Time
             </span>
           </motion.h1>
 {/* 
@@ -50,7 +50,7 @@ export function HeroSection() {
             className="flex flex-col sm:flex-row gap-4 w-full justify-center pointer-events-auto"
           >
             <Link href="/dashboard">
-              <Button size="lg" className="h-14 px-8 text-lg w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-white rounded-full shadow-[0_0_20px_rgba(16,185,129,0.4)]">
+              <Button size="lg" className="h-14 px-8 text-lg w-full sm:w-auto bg-maroon-700 hover:bg-maroon-600 text-white rounded-full shadow-[0_0_20px_rgba(178,43,29,0.4)] border border-maroon-500/50">
                 Start Free Trial <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
