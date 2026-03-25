@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space' });
 
 export const metadata: Metadata = {
-  title: 'Voice AI Assistant | Premium Portfolio',
+  title: 'Aion AI | Premium Voice Assistant',
   description: 'AI-powered Voice Assistant for professional call handling',
 };
 
