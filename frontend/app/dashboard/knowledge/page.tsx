@@ -182,7 +182,7 @@ LOCATION: 123 Main Street, Suite 100
             </div>
 
             <div className="space-y-2 mb-4">
-              {extractionFields.map((f, i) => (
+              {Array.isArray(extractionFields) && extractionFields.map((f, i) => (
                 <div key={i} className="flex items-center gap-3 p-3 bg-black/20 rounded-lg border border-white/5">
                   <ClipboardList className="h-4 w-4 text-amber-400 shrink-0" />
                   <span className="text-sm text-white flex-1">{f.field}</span>

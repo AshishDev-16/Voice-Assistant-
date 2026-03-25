@@ -100,8 +100,14 @@ export default function StarterPage() {
   const [newFieldName, setNewFieldName] = useState("");
 
   useEffect(() => {
-    if (isLoaded && user && !user.publicMetadata.plan) {
-      router.push('/#pricing');
+    if (isLoaded && user) {
+      const plan = user.publicMetadata.plan;
+      if (!plan) {
+        router.push('/#pricing');
+      } else if (plan === 'pro' || plan === 'enterprise') {
+        // Pro/Enterprise users belong in the main dashboard
+        router.push('/dashboard');
+      }
     }
   }, [isLoaded, user, router]);
 

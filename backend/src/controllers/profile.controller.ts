@@ -12,6 +12,19 @@ export const getProfile = async (req: Request, res: Response) => {
     const user = await User.findOne({ clerkId });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
+    // Sync Plan from Clerk if out of sync
+    try {
+      const clerkUser = await clerk.users.getUser(clerkId as string);
+      const clerkPlan = (clerkUser.publicMetadata.plan as string) || 'starter';
+      if (user.plan !== clerkPlan) {
+        user.plan = clerkPlan as 'starter' | 'pro' | 'enterprise';
+        await user.save();
+        console.log(`[PROFILE_GET] Synced plan for ${clerkId}: ${clerkPlan}`);
+      }
+    } catch (err) {
+      console.error('[PROFILE_GET] Failed to sync plan from Clerk:', err);
+    }
+
     return res.status(200).json({
       aiPersonality: user.aiPersonality,
       knowledgeBase: user.knowledgeBase,

@@ -2,7 +2,10 @@ import { Request, Response } from 'express';
 import { CallLog } from '../models/CallLog';
 import { User } from '../models/User';
 import { getPlanLimits } from '../utils/planLimits';
+import { createClerkClient } from '@clerk/backend';
 import logger from '../utils/logger';
+
+const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
 
 /**
  * Dashboard stats — real data from CallLog + User usage
@@ -12,8 +15,22 @@ export const getDashboardStats = async (req: Request, res: Response) => {
     const { businessId } = req.query;
     if (!businessId) return res.status(400).json({ error: 'businessId is required' });
 
-    const user = await User.findOne({ clerkId: businessId });
+    let user = await User.findOne({ clerkId: businessId });
     if (!user) return res.status(404).json({ error: 'User not found' });
+
+    // Sync Plan from Clerk if out of sync
+    try {
+      const clerkUser = await clerk.users.getUser(businessId as string);
+      const clerkPlan = (clerkUser.publicMetadata.plan as string) || 'starter';
+      logger.info(`Plan Check for ${businessId}: DB=${user.plan}, Clerk=${clerkPlan}`);
+      if (user.plan !== clerkPlan) {
+        user.plan = clerkPlan as 'starter' | 'pro' | 'enterprise';
+        await user.save();
+        logger.info(`Successfully synced MongoDB plan to: ${clerkPlan}`);
+      }
+    } catch (err) {
+      logger.error(`Failed to sync plan from Clerk for ${businessId}:`, err);
+    }
 
     const limits = getPlanLimits(user.plan || 'starter');
 

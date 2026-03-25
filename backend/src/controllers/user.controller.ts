@@ -12,10 +12,24 @@ export const saveCredentials = async (req: Request, res: Response) => {
 
     let user = await User.findOne({ clerkId });
 
+    // Fetch plan from Clerk if not provided
+    let finalPlan = plan;
+    if (!finalPlan) {
+      try {
+        const { createClerkClient } = require('@clerk/backend');
+        const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+        const clerkUser = await clerk.users.getUser(clerkId);
+        finalPlan = (clerkUser.publicMetadata.plan as string) || 'starter';
+      } catch (err) {
+        logger.error('Failed to fetch plan from Clerk during user creation:', err);
+        finalPlan = 'starter';
+      }
+    }
+
     if (user) {
       user.waToken = waToken || user.waToken;
       user.waPhoneId = waPhoneId || user.waPhoneId;
-      if (plan) user.plan = plan;
+      if (finalPlan) user.plan = finalPlan as 'starter' | 'pro' | 'enterprise';
       user.updatedAt = new Date();
       await user.save();
     } else {
@@ -23,7 +37,7 @@ export const saveCredentials = async (req: Request, res: Response) => {
         clerkId,
         waToken,
         waPhoneId,
-        plan: plan || 'starter',
+        plan: (finalPlan as 'starter' | 'pro' | 'enterprise') || 'starter',
       });
     }
 

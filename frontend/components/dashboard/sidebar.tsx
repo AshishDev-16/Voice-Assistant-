@@ -20,7 +20,6 @@ const sidebarLinks = [
   { name: "Call Inbox", href: "/dashboard/calls", icon: PhoneCall },
   { name: "Appointments", href: "/dashboard/appointments", icon: CalendarCheck2 },
   { name: "Agent Config", href: "/dashboard/knowledge", icon: Brain },
-  { name: "Products", href: "/dashboard/products", icon: Package },
   { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];

@@ -16,12 +16,12 @@ export default function DashboardLayout({
 
   useEffect(() => {
     if (isLoaded && user) {
-      const userPlan = user.publicMetadata.plan; 
+      const userPlan = user.publicMetadata.plan;
       if (!userPlan) {
         // User has not paid yet, enforce paywall
         router.push('/#pricing');
-      } else if (userPlan === 'starter' && !user.publicMetadata.isOnboarded) {
-        // Starter user not onboarded yet
+      } else if (userPlan === 'starter') {
+        // Starter users are restricted to their own dashboard
         router.push('/starter-home');
       }
     }
