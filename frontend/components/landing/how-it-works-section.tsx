@@ -1,48 +1,69 @@
-import { PhoneCall, Cpu, ShoppingCart } from "lucide-react";
+"use client";
+
+import { motion } from "framer-motion";
+import { Cpu, Link2, Radio } from "lucide-react";
 
 export function HowItWorksSection() {
   const steps = [
     {
-      title: "Connect Phone Number",
-      description: "Link your Business Phone number via Twilio or Vapi.",
-      icon: PhoneCall,
+      title: "Uplink Connection",
+      description: "Provision a dedicated secure line via our high-availability Twilio node.",
+      icon: Link2,
+      delay: 0.1,
     },
     {
-      title: "Train the AI",
-      description: "Upload your product catalog and FAQs. Our AI learns instantly.",
+      title: "Neural Sync",
+      description: "Inject your business logic and context into our proprietary LLM architecture.",
       icon: Cpu,
+      delay: 0.2,
     },
     {
-      title: "Automate Calls",
-      description: "Watch the AI talk to callers and close orders for you.",
-      icon: ShoppingCart,
+      title: "Active Deployment",
+      description: "Initialize the autonomous agent to handle high-stakes verbal interactions.",
+      icon: Radio,
+      delay: 0.3,
     },
   ];
 
   return (
-    <section className="py-24 bg-[#050505] text-white relative border-t border-white/5 overflow-hidden">
-      {/* Ambient background blur */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-maroon-600/10 rounded-[100%] blur-[120px] pointer-events-none z-0"></div>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="text-center mb-20">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">How it works</h2>
-          <p className="text-lg text-slate-400 max-w-2xl mx-auto">
-            Get set up in minutes. No coding required.
-          </p>
+    <section id="process" className="py-32 bg-black relative border-t border-white/5 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        <div className="text-center mb-24">
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            className="text-emerald-500 font-display font-black uppercase tracking-[.4em] text-[10px] mb-4"
+          >
+            Protocol Initialization
+          </motion.div>
+          <h2 className="text-4xl md:text-6xl font-display font-black text-white tracking-tighter mb-6">
+            THREE STAGES TO <br/><span className="text-emerald-500 italic">FULL AUTONOMY</span>
+          </h2>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-12 relative">
-          <div className="hidden md:block absolute top-1/2 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-maroon-500/50 to-transparent -translate-y-1/2 z-0" />
+        <div className="grid md:grid-cols-3 gap-16 relative">
+          <div className="hidden md:block absolute top-[40px] left-0 w-full h-[1px] bg-white/10 z-0" />
           
           {steps.map((step, i) => (
-            <div key={i} className="relative z-10 flex flex-col items-center text-center">
-              <div className="w-20 h-20 rounded-full bg-white/5 backdrop-blur-xl border border-maroon-500/40 flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(255,131,113,0.2)] relative transition-transform hover:scale-110">
-                <div className="absolute inset-2 bg-maroon-500/10 rounded-full animate-ping opacity-50" />
-                <step.icon className="h-8 w-8 text-maroon-400 relative z-10" />
+            <motion.div 
+              key={i} 
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: step.delay }}
+              viewport={{ once: true }}
+              className="relative z-10 flex flex-col items-center text-center group"
+            >
+              <div className="w-20 h-20 rounded-2xl bg-black border border-white/10 flex items-center justify-center mb-8 group-hover:border-emerald-500 transition-all shadow-[0_0_40px_rgba(0,0,0,1)]">
+                <div className="absolute inset-2 bg-emerald-500/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                <step.icon className="h-8 w-8 text-emerald-500 transition-transform group-hover:scale-110" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
-              <p className="text-slate-400">{step.description}</p>
-            </div>
+              
+              <div className="text-xs font-mono text-emerald-800 mb-2 font-black">0{i+1}.SEQUENCE</div>
+              <h3 className="text-2xl font-display font-bold text-white mb-4 tracking-tight">{step.title}</h3>
+              <p className="text-slate-500 font-medium leading-relaxed">
+                {step.description}
+              </p>
+            </motion.div>
           ))}
         </div>
       </div>

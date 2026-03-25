@@ -1,73 +1,89 @@
 "use client";
 
-import { Zap, Target, BarChart3, Clock } from "lucide-react";
+import { Brain, Cpu, Database, Globe, Layers, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 
 export function FeaturesSection() {
   const features = [
     {
-      name: "Instant Setup",
-      description: "Connect your phone number, pick your business type, and your AI agent goes live in minutes. No coding required.",
-      icon: Clock,
+      title: "Autonomous Voice Engine",
+      description: "Proprietary neural architecture that processes intent and nuance with human-like precision.",
+      icon: Brain,
+      className: "md:col-span-2 md:row-span-2",
+      delay: 0.1,
     },
     {
-      name: "Human-Like Voice",
-      description: "Natural conversation with sub-500ms latency. Callers won't know they're talking to an AI.",
+      title: "Sub-100ms Latency",
+      description: "Optimized streaming protocols for seamless, real-time interactive dialogue.",
       icon: Zap,
+      className: "md:col-span-1 md:row-span-1 text-emerald-400",
+      delay: 0.2,
     },
     {
-      name: "Structured Outputs",
-      description: "Every call produces structured data: names, dates, orders. Extracted automatically and saved to your dashboard.",
-      icon: Target,
+      title: "Global Reach",
+      description: "Support for 50+ languages with localized accents and cultural context.",
+      icon: Globe,
+      className: "md:col-span-1 md:row-span-1 text-gold-400",
+      delay: 0.3,
     },
     {
-      name: "Industry Templates",
-      description: "Pre-built AI personas for dentists, restaurants, grocers, salons, and more. Customize to match your brand.",
-      icon: BarChart3,
-    },
+      title: "Deep CRM Integration",
+      description: "Automatic data extraction and synchronization with your existing tech stack.",
+      icon: Database,
+      className: "md:col-span-2 md:row-span-1",
+      delay: 0.4,
+    }
   ];
 
   return (
-    <section className="py-24 bg-[#050505] relative overflow-hidden text-white">
-      {/* Ambient background blobs */}
-      <div className="absolute top-0 right-[-10%] w-[500px] h-[500px] bg-white/5 rounded-full blur-[150px] pointer-events-none z-0"></div>
-      <div className="absolute bottom-0 left-[-10%] w-[500px] h-[500px] bg-maroon-500/10 rounded-full blur-[150px] pointer-events-none z-0"></div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+    <section id="features" className="py-32 bg-black relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-full h-full grid-pattern opacity-10 pointer-events-none" />
+      
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6 }}
-          className="text-center max-w-3xl mx-auto mb-16"
+          transition={{ duration: 0.8 }}
+          className="max-w-3xl mb-20"
         >
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 text-transparent bg-clip-text bg-gradient-to-r from-maroon-400 to-white">
-            Powerful features to scale
+          <div className="text-emerald-500 font-display font-black uppercase tracking-[.4em] text-[10px] mb-4">Core Architecture</div>
+          <h2 className="text-4xl md:text-6xl font-display font-black text-white tracking-tighter leading-none mb-6">
+            ENGINEERED FOR <br/><span className="text-emerald-500 italic">TOTAL DOMINANCE</span>
           </h2>
-          <p className="text-lg text-slate-400">
-            Everything you need to manage thousands of voice calls without losing the personal touch.
+          <p className="text-lg text-slate-400 font-medium">
+            We didn't just build an AI; we built a next-generation communication tier that handles complexity where others fail.
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {features.map((feature, index) => (
-            <motion.div 
-              initial={{ opacity: 0, y: 30 }}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 auto-rows-[250px]">
+          {features.map((feature, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              key={index} 
-              className="relative p-8 rounded-3xl bg-white/5 border border-white/5 shadow-2xl hover:border-maroon-500/50 transition-colors backdrop-blur-2xl group"
+              transition={{ duration: 0.8, delay: feature.delay }}
+              viewport={{ once: true }}
+              className={`group relative p-8 rounded-[32px] border border-white/10 bg-white/5 backdrop-blur-3xl overflow-hidden hover:border-emerald-500/50 transition-all duration-500 ${feature.className}`}
             >
-              <div className="absolute inset-0 bg-gradient-to-b from-maroon-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
-              <div className="relative z-10">
-                <div className="w-12 h-12 rounded-lg bg-maroon-500/20 flex items-center justify-center mb-6">
-                  <feature.icon className="h-6 w-6 text-maroon-400" />
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              
+              <div className="relative z-10 h-full flex flex-col">
+                <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 group-hover:bg-emerald-500 group-hover:text-black transition-all">
+                  <feature.icon className="h-6 w-6" />
                 </div>
-                <h3 className="text-xl font-semibold mb-3">{feature.name}</h3>
-                <p className="text-slate-400 leading-relaxed text-sm">
+                
+                <h3 className="text-2xl font-display font-bold text-white mb-3 tracking-tight group-hover:text-emerald-400 transition-colors">
+                  {feature.title}
+                </h3>
+                
+                <p className="text-slate-400 group-hover:text-slate-300 transition-colors leading-relaxed font-medium">
                   {feature.description}
                 </p>
+
+                <div className="mt-auto pt-4 flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-emerald-500/0 group-hover:text-emerald-500 transition-all">
+                   <Layers className="w-3 h-3" />
+                   <span>Operational System 4.0</span>
+                </div>
               </div>
             </motion.div>
           ))}

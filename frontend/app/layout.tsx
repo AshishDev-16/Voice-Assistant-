@@ -1,13 +1,14 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import { ClerkProvider} from "@clerk/nextjs";
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space' });
 
 export const metadata: Metadata = {
-  title: 'WhatsApp AI Agent Suite',
-  description: 'AI-powered WhatsApp Business Assistant SaaS platform',
+  title: 'Voice AI Assistant | Premium Portfolio',
+  description: 'AI-powered Voice Assistant for professional call handling',
 };
 
 export default function RootLayout({
@@ -18,7 +19,7 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" className="dark">
-        <body className={inter.className}>
+        <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased`}>
           {children}
         </body>
       </html>

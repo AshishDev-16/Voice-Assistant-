@@ -43,10 +43,10 @@ export function TubesBackground({
 
         const app = TubesCursor(canvasRef.current, {
           tubes: {
-            colors: ["#10b981", "#3b82f6", "#8b5cf6"],
+            colors: ["#10b981", "#059669", "#34d399"],
             lights: {
-              intensity: 500,
-              colors: ["#34d399", "#60a5fa", "#a78bfa", "#38bdf8"]
+              intensity: 600,
+              colors: ["#10b981", "#06b6d4", "#22d3ee", "#10b981"]
             }
           }
         });

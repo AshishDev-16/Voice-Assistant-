@@ -1,9 +1,10 @@
 "use client";
 
-import { Check, Loader2 } from "lucide-react";
+import { Check, Loader2, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { useAuth, useUser, useClerk } from "@clerk/nextjs";
+import { motion } from "framer-motion";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -23,14 +24,12 @@ export function PricingSection() {
 
   const handleCheckout = async (planId: string) => {
     if (!isSignedIn || !userId) {
-      openSignIn(); // Open Clerk modal, no broken /sign-up route
+      openSignIn();
       return;
     }
 
     try {
       setLoading(planId);
-
-      // Call Express backend (port 5000) — NOT Next.js API routes
       const res = await fetch(`${API_URL}/api/payment/order`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -44,8 +43,8 @@ export function PricingSection() {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: order.amount,
         currency: order.currency,
-        name: "AgentFlow SaaS",
-        description: `${planId.charAt(0).toUpperCase() + planId.slice(1)} Plan`,
+        name: "Aion AI",
+        description: "AION ACCESS TOKEN",
         order_id: order.id,
         handler: async function (response: any) {
           const verifyRes = await fetch(`${API_URL}/api/payment/verify`, {
@@ -60,99 +59,140 @@ export function PricingSection() {
             }),
           });
           if (verifyRes.ok) {
-            // Reload the page to refresh Clerk session with new publicMetadata
             window.location.href = planId === "starter" ? "/starter-home" : "/dashboard";
           } else {
-            alert("Payment verification failed. Please contact support.");
+            alert("Verification failed.");
           }
         },
         prefill: {
           email: user?.primaryEmailAddress?.emailAddress || "",
           name: user?.fullName || "",
         },
-        theme: { color: "#800000" },
+        theme: { color: "#10b981" },
       };
 
       const rzp = new (window as any).Razorpay(options);
-      rzp.on("payment.failed", (resp: any) => alert(resp.error.description));
       rzp.open();
-
     } catch (error) {
-      console.error("Razorpay error:", error);
-      alert("Failed to initialize payment gateway.");
+      console.error(error);
     } finally {
       setLoading(null);
     }
   };
 
   return (
-    <section id="pricing" className="py-24 bg-[#050505] relative overflow-hidden text-white">
-      {/* Ambient background blob */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-maroon-800/20 rounded-full blur-[120px] pointer-events-none z-0"></div>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">Pricing that scales with you</h2>
-          <p className="text-lg text-slate-400">Choose the perfect plan to automate your customer engagement.</p>
+    <section id="pricing" className="py-32 bg-black relative">
+       <div className="max-w-7xl mx-auto px-6 relative z-10">
+        <div className="text-center mb-24">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            className="text-gold-400 font-display font-black uppercase tracking-[.4em] text-[10px] mb-4"
+          >
+            Tier Allocation
+          </motion.div>
+          <h2 className="text-4xl md:text-6xl font-display font-black text-white tracking-tighter mb-6">
+            SECURE YOUR <br/><span className="text-gold-400 italic">OPEREATING SLOTS</span>
+          </h2>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto relative z-10">
-          {/* Starter Tier */}
-          <div className="p-8 rounded-3xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl flex flex-col relative z-10 transition-transform hover:scale-105">
-            <h3 className="text-xl font-medium mb-2">Starter</h3>
-            <div className="text-4xl font-bold mb-6">₹999<span className="text-lg text-slate-500 font-normal">/mo</span></div>
-            <ul className="space-y-4 mb-8 flex-1">
-              {['100 Voice Calls/mo', '500 AI Responses/mo', '1 Phone Number', '5 Extraction Fields', 'Standard Support'].map((item, i) => (
-                <li key={i} className="flex items-center text-slate-300">
-                  <Check className="h-5 w-5 text-maroon-400 mr-3 shrink-0" /> {item}
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {/* Starter */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            className="p-10 rounded-[32px] border border-white/5 bg-white/[0.02] backdrop-blur-3xl flex flex-col group hover:border-white/20 transition-all"
+          >
+            <div className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Basic Entry</div>
+            <h3 className="text-2xl font-display font-bold text-white mb-1">Starter</h3>
+            <div className="text-4xl font-display font-black text-white mt-4 mb-8 tracking-tighter">
+              ₹999<span className="text-sm text-slate-500 font-medium">/cycle</span>
+            </div>
+            
+            <ul className="space-y-4 mb-12 flex-1">
+              {['100 Secure Voice Calls', '500 Neural Responses', '1 Phone Node', 'Standard Priority'].map((item, i) => (
+                <li key={i} className="flex items-center text-sm text-slate-400 font-medium">
+                  <Check className="h-4 w-4 text-emerald-500 mr-3 shrink-0" /> {item}
                 </li>
               ))}
             </ul>
+
             <Button 
               onClick={() => handleCheckout("starter")}
               disabled={loading === "starter" || user?.publicMetadata?.plan === "starter" || user?.publicMetadata?.plan === "pro"}
-              variant="outline" 
-              className="w-full rounded-full border-white/20 bg-transparent text-white hover:bg-maroon-900/40 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-14 rounded-2xl border border-white/10 bg-white/5 text-white hover:bg-white/10 transition-all font-bold uppercase tracking-widest text-xs"
             >
-              {loading === "starter" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : user?.publicMetadata?.plan === "starter" ? "Current Plan" : "Get Started"}
+              {loading === "starter" ? <Loader2 className="animate-spin" /> : "Initialize"}
             </Button>
-          </div>
+          </motion.div>
 
-          {/* Pro Tier (Highlighted) */}
-          <div className="p-8 rounded-3xl bg-gradient-to-b from-maroon-800/10 to-transparent backdrop-blur-2xl shadow-[0_0_50px_rgba(128,0,0,0.2)] border border-maroon-500/40 flex flex-col relative scale-110 z-20">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-maroon-600 text-white px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase">
-              Most Popular
+          {/* Pro */}
+          <motion.div 
+             initial={{ opacity: 0, scale: 0.95 }}
+             whileInView={{ opacity: 1, scale: 1 }}
+             className="p-10 rounded-[40px] border-2 border-emerald-500/30 bg-emerald-500/[0.02] backdrop-blur-3xl flex flex-col relative scale-105 z-20 shadow-[0_0_60px_rgba(16,185,129,0.1)]"
+          >
+            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-black px-4 py-1 rounded-full text-[10px] font-black tracking-widest uppercase">
+              Elite Tier
             </div>
-            <h3 className="text-xl font-medium mb-2">Pro</h3>
-            <div className="text-4xl font-bold mb-6">₹2999<span className="text-lg text-slate-500 font-normal">/mo</span></div>
-            <ul className="space-y-4 mb-8 flex-1">
-              {['1,000 Voice Calls/mo', '5,000 AI Responses/mo', '3 Phone Numbers', '20 Extraction Fields', 'Full Analytics Dashboard', 'Priority Support'].map((item, i) => (
-                <li key={i} className="flex items-center text-slate-300">
-                  <Check className="h-5 w-5 text-maroon-400 mr-3 shrink-0" /> {item}
+            <div className="text-xs font-black text-emerald-500 uppercase tracking-widest mb-2">High Volume</div>
+            <h3 className="text-2xl font-display font-bold text-white mb-1 italic underline decoration-emerald-500/50">Tactical</h3>
+            <div className="text-4xl font-display font-black text-white mt-4 mb-8 tracking-tighter">
+              ₹2,999<span className="text-sm text-slate-500 font-medium">/cycle</span>
+            </div>
+            
+            <ul className="space-y-4 mb-12 flex-1">
+              {['1,000 Secure Voice Calls', '5,000 Neural Responses', '3 Phone Nodes', 'Full Analytics HUD', 'Priority Sync'].map((item, i) => (
+                <li key={i} className="flex items-center text-sm text-slate-100 font-bold">
+                  <Check className="h-4 w-4 text-emerald-500 mr-3 shrink-0" /> {item}
                 </li>
               ))}
             </ul>
+
             <Button 
-              onClick={() => handleCheckout("pro")}
-              disabled={loading === "pro" || user?.publicMetadata?.plan === "pro"}
-              className="w-full rounded-full bg-maroon-700 hover:bg-maroon-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+               onClick={() => handleCheckout("pro")}
+               disabled={loading === "pro" || user?.publicMetadata?.plan === "pro"}
+               className="w-full h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-[.2em] text-xs shadow-[0_0_30px_rgba(16,185,129,0.4)]"
             >
-              {loading === "pro" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : user?.publicMetadata?.plan === "pro" ? "Current Plan" : "Upgrade to Pro"}
+              {loading === "pro" ? <Loader2 className="animate-spin" /> : "Deploy Now"}
             </Button>
-          </div>
+          </motion.div>
 
           {/* Enterprise */}
-          <div className="p-8 rounded-3xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl flex flex-col relative z-10 transition-transform hover:scale-105">
-            <h3 className="text-xl font-medium mb-2">Enterprise</h3>
-            <div className="text-4xl font-bold mb-6">Custom</div>
-            <ul className="space-y-4 mb-8 flex-1">
-              {['Unlimited Voice Calls', 'Unlimited AI Responses', 'Unlimited Phone Numbers', 'Unlimited Extraction Fields', 'Dedicated Support', 'Custom AI Fine-tuning'].map((item, i) => (
-                <li key={i} className="flex items-center text-slate-300">
-                  <Check className="h-5 w-5 text-maroon-400 mr-3 shrink-0" /> {item}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            className="p-10 rounded-[32px] border border-white/5 bg-white/[0.02] backdrop-blur-3xl flex flex-col group hover:border-white/20 transition-all text-left"
+          >
+            <div className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Mass Scale</div>
+            <h3 className="text-2xl font-display font-bold text-white mb-1">Ultimate</h3>
+            <div className="text-4xl font-display font-black text-white mt-4 mb-8 tracking-tighter italic">
+              Custom
+            </div>
+            
+            <ul className="space-y-4 mb-12 flex-1">
+              {['Unlimited Voice Slots', 'Dedicated Neural Node', 'Global Node Presence', 'Direct Engineer Access'].map((item, i) => (
+                <li key={i} className="flex items-center text-sm text-slate-400 font-medium">
+                  <Check className="h-4 w-4 text-emerald-500 mr-3 shrink-0" /> {item}
                 </li>
               ))}
             </ul>
-            <Button variant="outline" className="w-full rounded-full border-white/20 bg-transparent text-white hover:bg-maroon-900/40" onClick={() => window.location.href="mailto:sales@agentflow.com"}>Contact Sales</Button>
-          </div>
+
+            <Button 
+               variant="outline" 
+               className="w-full h-14 rounded-2xl border border-white/10 bg-transparent text-white hover:bg-white/10 transition-all font-bold uppercase tracking-widest text-xs"
+               onClick={() => window.location.href="mailto:ops@aion.ai"}
+            >
+              Contact Command
+            </Button>
+          </motion.div>
+        </div>
+        
+        <div className="mt-20 flex justify-center">
+            <div className="flex items-center space-x-2 text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] border border-white/5 py-2 px-6 rounded-full">
+                <Shield className="w-3 h-3" />
+                <span>All communication encrypted via AES-256</span>
+            </div>
         </div>
       </div>
     </section>
