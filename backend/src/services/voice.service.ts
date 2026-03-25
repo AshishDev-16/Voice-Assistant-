@@ -72,22 +72,23 @@ export const initializeWebSocket = (server: Server) => {
                 const user = await User.findOne({ clerkId: businessId });
                 const summaryPrompt = `Summarize this phone call transcript concisely. Also extract structured data based on the business type "${user?.businessType || 'general'}".
                 
+                Categorize the sentiment/result as one of: 'positive', 'neutral', 'negative', or 'lead' (use 'lead' if they provided all contact/booking details or placed an order).
+                
 Transcript:
 ${transcriptBuffer.map(t => `${t.role}: ${t.text}`).join('\n')}
 
-Return a JSON object with: { "summary": "...", "outcome": "...", "extractedData": { ... } }`;
+Return a JSON object with: { "summary": "...", "outcome": "...", "sentiment": "...", "extractedData": { ... } }`;
 
-                const aiSummary = await generateAiResponse(summaryPrompt, callerNumber);
+                const aiSummaryResponse = await generateAiResponse(summaryPrompt, callerNumber);
 
-                let parsedSummary = { summary: '', outcome: '', extractedData: {} };
+                let parsedSummary = { summary: '', outcome: '', sentiment: 'neutral', extractedData: {} };
                 try {
-                  // Try to parse AI response as JSON
-                  const jsonMatch = aiSummary.match(/\{[\s\S]*\}/);
+                  const jsonMatch = aiSummaryResponse.match(/\{[\s\S]*\}/);
                   if (jsonMatch) {
                     parsedSummary = JSON.parse(jsonMatch[0]);
                   }
                 } catch {
-                  parsedSummary.summary = aiSummary;
+                  parsedSummary.summary = aiSummaryResponse;
                 }
 
                 await CallLog.findByIdAndUpdate(callLogId, {
@@ -95,7 +96,9 @@ Return a JSON object with: { "summary": "...", "outcome": "...", "extractedData"
                   transcript: transcriptBuffer,
                   summary: parsedSummary.summary,
                   outcome: parsedSummary.outcome,
+                  sentiment: parsedSummary.sentiment || 'neutral',
                   extractedData: parsedSummary.extractedData,
+                  recordingUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", // Mock recording for UI demo
                   duration: Math.floor((Date.now() - new Date().getTime()) / 1000),
                   updatedAt: new Date()
                 });

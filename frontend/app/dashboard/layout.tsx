@@ -20,7 +20,8 @@ export default function DashboardLayout({
       if (!userPlan) {
         // User has not paid yet, enforce paywall
         router.push('/#pricing');
-      } else if (userPlan === 'starter') {
+      } else if (userPlan === 'starter' && !user.publicMetadata.isOnboarded) {
+        // Starter user not onboarded yet
         router.push('/starter-home');
       }
     }

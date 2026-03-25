@@ -1,5 +1,8 @@
 import { Request, Response } from 'express';
 import { User } from '../models/User';
+import { createClerkClient } from '@clerk/backend';
+
+const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
 
 export const getProfile = async (req: Request, res: Response) => {
   try {
@@ -44,6 +47,19 @@ export const updateProfile = async (req: Request, res: Response) => {
       { $set: updateFields },
       { new: true, upsert: true }
     );
+
+    // Sync to Clerk publicMetadata so frontend routing works immediately
+    if (isOnboarded !== undefined) {
+      try {
+        await clerk.users.updateUserMetadata(clerkId, {
+          publicMetadata: {
+            isOnboarded: !!isOnboarded
+          }
+        });
+      } catch (clerkError) {
+        console.error('[CLERK_METADATA_SYNC_ERROR]', clerkError);
+      }
+    }
 
     return res.status(200).json({
       success: true,

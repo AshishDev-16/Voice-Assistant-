@@ -12,21 +12,35 @@ const fetcher = (url: string) => fetch(`${API_URL}${url}`).then(r => r.json());
 function UsageBar({ label, used, limit, color }: { label: string; used: number; limit: number; color: string }) {
   const isUnlimited = limit === -1;
   const pct = isUnlimited ? 0 : limit > 0 ? Math.min(100, Math.round((used / limit) * 100)) : 0;
-  const barColor = pct > 90 ? 'bg-red-500' : pct > 70 ? 'bg-yellow-500' : `bg-${color}`;
+  const borderCol = pct > 90 ? 'border-red-500/50' : pct > 70 ? 'border-yellow-500/50' : 'border-white/10';
+  const barCol = pct > 90 ? 'bg-red-500' : pct > 70 ? 'bg-yellow-500' : color;
 
   return (
-    <div>
-      <div className="flex justify-between text-sm mb-1">
-        <span className="text-zinc-400">{label}</span>
-        <span className="text-white font-medium">
-          {used.toLocaleString()} / {isUnlimited ? '∞' : limit.toLocaleString()}
+    <div className="space-y-2">
+      <div className="flex justify-between items-end">
+        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{label}</span>
+        <span className="text-xs font-mono text-white">
+          {used.toLocaleString()} <span className="text-zinc-600">/ {isUnlimited ? '∞' : limit.toLocaleString()}</span>
         </span>
       </div>
-      <div className="w-full bg-black/30 rounded-full h-2.5 border border-white/5">
-        <div className={`${barColor} h-2.5 rounded-full transition-all duration-500`} style={{ width: `${isUnlimited ? 5 : pct}%` }} />
+      <div className={`w-full bg-black/40 rounded-full h-1.5 border ${borderCol} overflow-hidden`}>
+        <motion.div 
+          initial={{ width: 0 }}
+          animate={{ width: `${isUnlimited ? 10 : pct}%` }}
+          className={`${barCol} h-full rounded-full shadow-[0_0_10px_rgba(0,0,0,0.5)]`} 
+        />
       </div>
     </div>
   );
+}
+
+function SentimentBadge({ sentiment }: { sentiment?: string }) {
+  switch (sentiment) {
+    case 'positive': return <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" title="Positive" />;
+    case 'negative': return <div className="h-1.5 w-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]" title="Negative" />;
+    case 'lead': return <div className="h-1.5 w-1.5 rounded-full bg-maroon-500 shadow-[0_0_8px_rgba(128,0,0,0.5)]" title="Hot Lead" />;
+    default: return <div className="h-1.5 w-1.5 rounded-full bg-zinc-500" title="Neutral" />;
+  }
 }
 
 export default function DashboardPage() {
@@ -35,19 +49,25 @@ export default function DashboardPage() {
   const { data: profile } = useSWR(userId ? `/api/profile?clerkId=${userId}` : null, fetcher);
 
   const statCards = [
-    { label: "Total Calls", value: stats?.totalCalls ?? "—", icon: Phone, color: "text-maroon-400" },
-    { label: "Completed", value: stats?.completedCalls ?? "—", icon: Phone, color: "text-green-400" },
-    { label: "Missed", value: stats?.missedCalls ?? "—", icon: PhoneMissed, color: "text-red-400" },
-    { label: "In Progress", value: stats?.inProgressCalls ?? "—", icon: PhoneIncoming, color: "text-yellow-400" },
+    { label: "Total Voice Traffic", value: stats?.totalCalls ?? "—", icon: Phone, color: "text-maroon-400" },
+    { label: "Goal Completion", value: stats?.completedCalls ?? "—", icon: Gauge, color: "text-green-400" },
+    { label: "Missed Opportunities", value: stats?.missedCalls ?? "—", icon: PhoneMissed, color: "text-red-400" },
+    { label: "Live Active Sessions", value: stats?.inProgressCalls ?? "—", icon: PhoneIncoming, color: "text-yellow-400" },
   ];
 
   const usage = stats?.usage;
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 p-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-white">Dashboard Overview</h1>
-        <p className="text-sm text-zinc-400 mt-1">Here&apos;s how your AI Voice Agent is performing today.</p>
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 p-6">
+      <div className="flex justify-between items-end">
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight text-white bg-gradient-to-r from-white to-zinc-500 bg-clip-text text-transparent">Nerve Center</h1>
+          <p className="text-sm text-zinc-500 mt-1 font-medium italic">AgentFlow AI is standing by and attending your business calls.</p>
+        </div>
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 text-[10px] font-bold text-green-400 uppercase tracking-widest animate-pulse">
+           <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
+           Live Engine Active
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -58,53 +78,75 @@ export default function DashboardPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.1 }}
-            className="p-5 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/5 shadow-lg"
+            className="p-6 rounded-2xl bg-white/[0.03] backdrop-blur-3xl border border-white/5 shadow-2xl group hover:border-maroon-500/30 transition-all duration-500"
           >
-            <div className="flex items-center gap-3 mb-2">
-              <stat.icon className={`h-5 w-5 ${stat.color}`} />
-              <span className="text-sm text-zinc-400">{stat.label}</span>
+            <div className="flex items-center gap-3 mb-3">
+              <div className={`p-2 rounded-lg bg-black/40 ${stat.color} group-hover:scale-110 transition-transform`}>
+                <stat.icon className="h-4 w-4" />
+              </div>
+              <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">{stat.label}</span>
             </div>
-            <p className="text-3xl font-bold text-white">{stat.value}</p>
+            <p className="text-3xl font-black text-white">{stat.value}</p>
           </motion.div>
         ))}
       </div>
 
-      {/* Usage Tracking + Recent Calls */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        {/* Recent Calls */}
-        <div className="col-span-4 rounded-2xl border border-white/5 bg-white/5 backdrop-blur-2xl p-6 shadow-xl">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-lg text-white">Recent Calls</h3>
-            <Link href="/dashboard/calls" className="text-sm text-maroon-400 hover:text-maroon-300 flex items-center gap-1">
-              View All <ArrowRight className="h-3 w-3" />
+      {/* Usage Tracking + Pulse Feed */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+        {/* Agent Intelligence Pulse */}
+        <div className="col-span-4 rounded-3xl border border-white/5 bg-white/[0.02] backdrop-blur-3xl p-6 shadow-2xl relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity">
+             <PhoneIncoming className="h-32 w-32 -rotate-12" />
+          </div>
+          <div className="flex items-center justify-between mb-6 relative z-10">
+            <div>
+              <h3 className="font-bold text-xl text-white tracking-tight">Intelligence Pulse</h3>
+              <p className="text-[10px] text-zinc-500 font-medium uppercase tracking-widest mt-0.5">Real-time AI activity log</p>
+            </div>
+            <Link href="/dashboard/calls" className="p-2 rounded-full bg-white/5 hover:bg-maroon-500/20 text-maroon-400 transition-all">
+              <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-3 relative z-10">
             {stats?.recentCalls && stats.recentCalls.length > 0 ? (
               stats.recentCalls.map((call: any, i: number) => (
-                <div key={i} className="flex items-center gap-4 p-3 rounded-xl bg-black/20 border border-white/5">
-                  <div className={`h-8 w-8 rounded-full flex items-center justify-center ${
-                    call.status === 'completed' ? 'bg-green-500/10' : call.status === 'missed' ? 'bg-red-500/10' : 'bg-yellow-500/10'
+                <div key={i} className="group/item flex items-center gap-4 p-4 rounded-2xl bg-black/30 border border-white/5 hover:border-maroon-500/30 transition-all duration-300">
+                  <div className={`h-10 w-10 rounded-xl flex items-center justify-center transition-all ${
+                    call.status === 'completed' ? 'bg-green-500/10 text-green-400' : 
+                    call.status === 'missed' ? 'bg-red-500/10 text-red-400' : 
+                    'bg-yellow-500/10 text-yellow-400 animate-pulse'
                   }`}>
-                    {call.status === 'completed' ? <Phone className="h-4 w-4 text-green-400" /> :
-                     call.status === 'missed' ? <PhoneMissed className="h-4 w-4 text-red-400" /> :
-                     <PhoneIncoming className="h-4 w-4 text-yellow-400" />}
+                    {call.status === 'completed' ? <Phone className="h-4 w-4" /> :
+                     call.status === 'missed' ? <PhoneMissed className="h-4 w-4" /> :
+                     <div className="flex gap-0.5 h-3 items-end">
+                       <div className="w-0.5 h-full bg-yellow-400 animate-[bounce_0.8s_infinite]" />
+                       <div className="w-0.5 h-2/3 bg-yellow-400 animate-[bounce_0.8s_infinite_0.2s]" />
+                       <div className="w-0.5 h-full bg-yellow-400 animate-[bounce_0.8s_infinite_0.4s]" />
+                     </div>}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white truncate">{call.callerNumber}</p>
-                    <p className="text-xs text-zinc-500">{call.outcome || call.status}</p>
+                    <div className="flex items-center gap-2">
+                       <p className="text-sm font-bold text-white truncate">{call.callerNumber}</p>
+                       <SentimentBadge sentiment={call.sentiment} />
+                       {call.status === 'in-progress' && (
+                         <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 font-black uppercase tracking-tighter">LIVE</span>
+                       )}
+                    </div>
+                    <p className="text-[11px] text-zinc-500 font-medium mt-0.5">{call.outcome || 'Call in progress...'}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs text-zinc-500">{call.duration ? `${Math.floor(call.duration/60)}:${(call.duration%60).toString().padStart(2,'0')}` : '—'}</p>
-                    <p className="text-xs text-zinc-600">{new Date(call.createdAt).toLocaleDateString()}</p>
+                    <p className="text-xs font-mono text-zinc-400">{call.duration ? `${Math.floor(call.duration/60)}:${(call.duration%60).toString().padStart(2,'0')}` : 'LIVE'}</p>
+                    <p className="text-[9px] text-zinc-600 font-bold uppercase tracking-tighter mt-1">{new Date(call.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="flex flex-col items-center justify-center py-12 text-zinc-500">
-                <Phone className="h-10 w-10 mb-3 opacity-20" />
-                <p className="text-sm">No calls yet</p>
-                <p className="text-xs mt-1">Calls will appear here once your AI agent starts receiving them.</p>
+              <div className="flex flex-col items-center justify-center py-16 text-zinc-600">
+                <div className="h-12 w-12 rounded-2xl bg-white/[0.02] flex items-center justify-center mb-4">
+                  <Phone className="h-6 w-6 opacity-20" />
+                </div>
+                <p className="text-sm font-bold tracking-tight">Awaiting inbound traffic</p>
+                <p className="text-[10px] mt-1 font-medium uppercase tracking-widest opacity-60">Pulse will activate on next call</p>
               </div>
             )}
           </div>

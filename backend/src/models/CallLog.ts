@@ -21,6 +21,8 @@ const callLogSchema = new mongoose.Schema({
   outcome: { type: String, default: "" }, // e.g. "Appointment Booked", "Order Placed", "Inquiry"
   twilioCallSid: { type: String, default: "" },
   streamSid: { type: String, default: "" },
+  sentiment: { type: String, enum: ['positive', 'neutral', 'negative', 'lead'], default: 'neutral' },
+  recordingUrl: { type: String, default: "" },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });

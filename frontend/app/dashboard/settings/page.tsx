@@ -76,7 +76,7 @@ export default function SettingsPage() {
               <select 
                 value={businessType}
                 onChange={(e) => setBusinessType(e.target.value)}
-                className="h-10 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white focus:border-maroon-500/50 focus:outline-none focus:ring-1 focus:ring-maroon-500/50 transition-all"
+                className="h-10 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white focus:border-maroon-500/50 focus:outline-none focus:ring-1 focus:ring-maroon-500/50 transition-all font-medium"
               >
                 <option value="">Select...</option>
                 <option value="dentist">Dentist Clinic</option>
@@ -102,11 +102,64 @@ export default function SettingsPage() {
             <Button 
               onClick={handleSave}
               disabled={saving}
-              className="mt-2 bg-maroon-700 hover:bg-maroon-600 text-white shadow-[0_0_15px_rgba(128,0,0,0.3)]"
+              className="mt-2 bg-maroon-700 hover:bg-maroon-600 text-white shadow-[0_0_15px_rgba(128,0,0,0.3)] border-none"
             >
               {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-              {saved ? "Saved!" : "Save Changes"}
+              {saved ? "Saved!" : "Update Profile"}
             </Button>
+          </div>
+        </div>
+
+        {/* Integrations & Automations */}
+        <div className="rounded-2xl border border-white/5 bg-white/5 backdrop-blur-2xl p-6 shadow-xl relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-6 opacity-[0.02] group-hover:opacity-[0.05] transition-opacity">
+             <Save className="h-24 w-24 scale-150 rotate-12" />
+          </div>
+          <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2 tracking-tight">
+             Automations & Integrations
+             <span className="text-[10px] px-2 py-0.5 rounded-full bg-maroon-500/20 text-maroon-400 border border-maroon-500/40 uppercase font-black">Pro</span>
+          </h3>
+          <p className="text-xs text-zinc-500 mb-6">Actionable results delivered where you work.</p>
+          
+          <div className="grid gap-4 sm:grid-cols-2">
+            {/* SMS Summary */}
+            <div className="p-4 rounded-xl bg-black/30 border border-white/5 flex flex-col justify-between">
+               <div>
+                  <h4 className="text-sm font-bold text-white mb-1">SMS Post-Call Summary</h4>
+                  <p className="text-[11px] text-zinc-500">Get an instant text summary after every lead interaction.</p>
+               </div>
+               <div className="mt-4 flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-zinc-600 tracking-widest uppercase">Disabled</span>
+                  <div className="w-10 h-5 bg-white/5 rounded-full border border-white/10 relative p-1 cursor-pointer">
+                     <div className="h-full aspect-square bg-zinc-700 rounded-full" />
+                  </div>
+               </div>
+            </div>
+
+            {/* Calendar Sync */}
+            <div className="p-4 rounded-xl bg-black/30 border border-white/5 flex flex-col justify-between">
+               <div>
+                  <h4 className="text-sm font-bold text-white mb-1">Calendar Sync</h4>
+                  <p className="text-[11px] text-zinc-500">Auto-sync extracted appointment dates to your calendar.</p>
+               </div>
+               <div className="mt-4 flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-zinc-600 tracking-widest uppercase">Not Connected</span>
+                  <button className="px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] font-bold text-white hover:bg-white/10 transition-colors capitalize">Connect Google</button>
+               </div>
+            </div>
+
+             {/* Custom Domain */}
+             <div className="p-4 rounded-xl bg-black/30 border border-white/5 col-span-full">
+               <h4 className="text-sm font-bold text-white mb-1">Custom Dashboad Subdomain</h4>
+               <p className="text-[11px] text-zinc-500 mb-3">Professional whitelabeling for your business dashboard.</p>
+               <div className="flex gap-2">
+                  <div className="flex-1 flex items-center px-3 py-2 rounded-lg bg-black/40 border border-white/5 text-sm text-zinc-400 font-medium">
+                     <span className="text-zinc-600">agentflow.ai/</span>
+                     <span className="text-white">my-business</span>
+                  </div>
+                  <button className="px-4 py-2 bg-maroon-800/40 border border-maroon-500/30 text-maroon-400 text-xs font-bold rounded-lg uppercase tracking-widest hover:bg-maroon-700/40 transition-all">Verify</button>
+               </div>
+            </div>
           </div>
         </div>
 

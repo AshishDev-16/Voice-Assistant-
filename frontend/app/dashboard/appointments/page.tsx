@@ -12,9 +12,19 @@ interface Appointment {
   callerNumber: string;
   outcome: string;
   summary: string;
+  sentiment?: string;
   extractedData: Record<string, any>;
   date: string;
   duration: number;
+}
+
+function SentimentBadge({ sentiment }: { sentiment?: string }) {
+  switch (sentiment) {
+    case 'positive': return <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 font-medium">Positive</span>;
+    case 'negative': return <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/20 font-medium">Negative</span>;
+    case 'lead': return <span className="text-[10px] px-2 py-0.5 rounded-full bg-maroon-500/20 text-maroon-400 border border-maroon-500/20 font-medium uppercase font-bold tracking-tighter">LEAD</span>;
+    default: return <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-500/20 text-zinc-400 border border-zinc-500/20 font-medium">Neutral</span>;
+  }
 }
 
 export default function AppointmentsPage() {
