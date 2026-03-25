@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@clerk/nextjs": "^5.0.0",
+    "@clerk/nextjs": "5.7.1",
     "@react-three/drei": "^9.105.4",
     "@react-three/fiber": "^8.16.1",
     "class-variance-authority": "^0.7.1",
