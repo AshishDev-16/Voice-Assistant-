@@ -43,10 +43,21 @@ export function Footer() {
           </div>
         </div>
         <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center text-[10px] font-black uppercase tracking-widest">
-          <p>© {new Date().getFullYear()} AION AI SYSTEMS. ALL RIGHTS RESERVED.</p>
+          <div className="flex items-center space-x-1">
+            <p>© {new Date().getFullYear()} AION AI SYSTEMS. ALL RIGHTS RESERVED.</p>
+            <span className="text-white/20">|</span>
+            <p className="text-emerald-500">DEVELOPED BY ASHISH</p>
+          </div>
           <div className="flex space-x-8 mt-6 md:mt-0">
             <Link href="#" className="hover:text-emerald-500 transition-colors">Neural-Net</Link>
-            <Link href="#" className="hover:text-emerald-500 transition-colors">Encrypted-Git</Link>
+            <Link 
+              href="https://github.com/AshishDev-16/Voice-Assistant-" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-emerald-500 transition-colors"
+            >
+              Public-Repo
+            </Link>
             <Link href="#" className="hover:text-emerald-500 transition-colors">Terminal</Link>
           </div>
         </div>

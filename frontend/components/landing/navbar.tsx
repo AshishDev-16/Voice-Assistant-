@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Mic, ChevronRight } from "lucide-react";
+import { Mic, ChevronRight, Github } from "lucide-react";
 import { SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 import { useAuth } from "@clerk/nextjs";
 
@@ -27,6 +27,15 @@ export function Navbar() {
         <div className="hidden md:flex items-center space-x-8">
           <Link href="#features" className="text-sm font-medium text-slate-400 hover:text-emerald-400 transition-colors uppercase tracking-widest">Capabilities</Link>
           <Link href="#pricing" className="text-sm font-medium text-slate-400 hover:text-emerald-400 transition-colors uppercase tracking-widest">Pricing</Link>
+          <Link
+            href="https://github.com/AshishDev-16/Voice-Assistant-"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center space-x-2 text-sm font-medium text-slate-400 hover:text-emerald-400 transition-colors uppercase tracking-widest"
+          >
+            <Github className="w-4 h-4" />
+            <span>Git</span>
+          </Link>
         </div>
 
         <div className="flex items-center space-x-4">
