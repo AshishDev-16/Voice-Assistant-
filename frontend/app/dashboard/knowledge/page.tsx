@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { Save, Brain, CheckCircle2, AlertCircle, Database, ClipboardList, Loader2 } from "lucide-react";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useAuth } from "@clerk/nextjs";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function KnowledgeBasePage() {
+  const { isLoaded, userId, getToken } = useAuth();
   const { user } = useUser();
 
   const [aiPersonality, setAiPersonality] = useState("");
@@ -22,7 +23,12 @@ export default function KnowledgeBasePage() {
     async function fetchProfile() {
       if (!user) return;
       try {
-        const res = await fetch(`${API_URL}/api/profile?clerkId=${user.id}`);
+        const token = await getToken();
+        const res = await fetch(`${API_URL}/api/profile?clerkId=${user.id}`, {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
         if (res.ok) {
           const data = await res.json();
           setAiPersonality(data.aiPersonality || "");

@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export function PricingSection() {
-  const { isSignedIn, userId } = useAuth();
+  const { isSignedIn, userId, getToken } = useAuth();
   const { user } = useUser();
   const { openSignIn } = useClerk();
   const [loading, setLoading] = useState<string | null>(null);
@@ -30,9 +30,14 @@ export function PricingSection() {
 
     try {
       setLoading(planId);
+      const token = await getToken();
+      
       const res = await fetch(`${API_URL}/api/payment/order`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
         body: JSON.stringify({ planId, clerkUserId: userId }),
       });
 
@@ -47,9 +52,13 @@ export function PricingSection() {
         description: "AION ACCESS TOKEN",
         order_id: order.id,
         handler: async function (response: any) {
+          const verifyToken = await getToken();
           const verifyRes = await fetch(`${API_URL}/api/payment/verify`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${verifyToken}`
+            },
             body: JSON.stringify({
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
@@ -59,7 +68,7 @@ export function PricingSection() {
             }),
           });
           if (verifyRes.ok) {
-            window.location.href = planId === "starter" ? "/starter-home" : "/dashboard";
+            window.location.href = "/onboarding";
           } else {
             alert("Verification failed.");
           }

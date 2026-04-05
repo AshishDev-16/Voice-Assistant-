@@ -87,9 +87,9 @@ export const getDashboardStats = async (req: Request, res: Response) => {
 };
 
 /**
- * Fetch appointments — CallLogs where extractedData has meaningful fields
+ * Fetch Intelligence Hub data — CallLogs where extractedData has meaningful fields
  */
-export const getAppointments = async (req: Request, res: Response) => {
+export const getIntelligence = async (req: Request, res: Response) => {
   try {
     const { businessId } = req.query;
     if (!businessId) return res.status(400).json({ error: 'businessId is required' });
@@ -106,8 +106,8 @@ export const getAppointments = async (req: Request, res: Response) => {
       .limit(50)
       .lean();
 
-    // Transform into user-friendly appointment format
-    const appointments = calls
+    // Transform into user-friendly intelligence format
+    const intelligence = calls
       .filter((call: any) => call.extractedData && Object.keys(call.extractedData).length > 0)
       .map((call: any) => ({
         id: call._id,
@@ -115,14 +115,16 @@ export const getAppointments = async (req: Request, res: Response) => {
         outcome: call.outcome || 'Unknown',
         summary: call.summary || '',
         extractedData: call.extractedData,
+        sentiment: call.sentiment,
+        leadScore: call.leadScore || 0,
         date: call.createdAt,
         duration: call.duration,
       }));
 
-    res.json(appointments);
+    res.json(intelligence);
   } catch (error) {
-    logger.error('Error fetching appointments:', error);
-    res.status(500).json({ error: 'Failed to fetch appointments' });
+    logger.error('Error fetching intelligence hub data:', error);
+    res.status(500).json({ error: 'Failed to fetch intelligence hub data' });
   }
 };
 

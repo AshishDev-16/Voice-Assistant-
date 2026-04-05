@@ -5,6 +5,7 @@ import { sendWhatsAppMessage } from './whatsapp.service';
 import mongoose from 'mongoose';
 import { Content } from '@google/generative-ai';
 import { User } from '../models/User';
+import { Business } from '../models/Business';
 
 // Simple Mongoose schema for storing Conversation data
 const messageSchema = new mongoose.Schema({
@@ -40,21 +41,23 @@ export const processIncomingMessage = async (parsedMsg: ParsedMessage): Promise<
       logger.error('Error saving inbound message to DB:', dbErr);
     }
 
-    // 1.5 Fetch user profile based on the WhatsApp Business Phone ID
-    const user = await User.findOne({ waPhoneId: parsedMsg.phoneNumberId });
+    // 1.5 Fetch Business profile based on the WhatsApp Business Phone ID
+    const business = await Business.findOne({ waPhoneId: parsedMsg.phoneNumberId });
+    const user = business ? await User.findOne({ clerkId: business.ownerId }) : null;
     let waToken: string | undefined = undefined;
 
-    if (user) {
-      waToken = user.waToken || undefined;
-      const limit = user.plan === 'starter' ? 1000 : user.plan === 'pro' ? 10000 : Infinity;
+    if (business && user) {
+      waToken = business.waToken || undefined;
+      const limits = require('../utils/planLimits').getPlanLimits(user.plan || 'starter');
+      const limit = limits.aiResponsesPerMonth === Infinity ? Infinity : limits.aiResponsesPerMonth;
       
-      if (user.messageCount >= limit) {
+      if (user.monthlyAiResponses >= limit) {
         logger.info(`Rate limit reached for user ${user.clerkId} on plan ${user.plan}`);
         try {
           await sendWhatsAppMessage(
             parsedMsg.phoneNumberId,
             parsedMsg.customerPhone,
-            "Our AI agent is currently offline. Please leave a message and our team will get back to you.",
+            "Our AI agent has reached its monthly response limit. Please upgrade your plan to continue.",
             waToken
           );
         } catch (err) {
@@ -88,16 +91,16 @@ export const processIncomingMessage = async (parsedMsg: ParsedMessage): Promise<
       parsedMsg.messageText, 
       parsedMsg.customerPhone, 
       history,
-      user?.aiPersonality || "You are a helpful WhatsApp AI Agent for a modern SaaS company called 'AgentFlow'. Your goal is to assist customers with queries.",
-      user?.knowledgeBase || "No specific business knowledge provided yet."
+      business?.aiConfig?.personality || "You are a helpful WhatsApp AI Agent. Your goal is to assist customers.",
+      business?.aiConfig?.knowledgeBase || "No specific business knowledge provided yet."
     );
 
     // 4. Send the reply back via WhatsApp Cloud API
     await sendWhatsAppMessage(parsedMsg.phoneNumberId, parsedMsg.customerPhone, aiReply, waToken);
 
     if (user) {
-      // Increment user's message usage count
-      user.messageCount += 1;
+      // Increment user's AI response usage count
+      user.monthlyAiResponses += 1;
       await user.save();
     }
 

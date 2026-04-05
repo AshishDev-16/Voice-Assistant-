@@ -22,6 +22,7 @@ const callLogSchema = new mongoose.Schema({
   twilioCallSid: { type: String, default: "" },
   streamSid: { type: String, default: "" },
   sentiment: { type: String, enum: ['positive', 'neutral', 'negative', 'lead'], default: 'neutral' },
+  leadScore: { type: Number, default: 0 }, // 0-100 score for Pro Plan lead qualification
   recordingUrl: { type: String, default: "" },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }

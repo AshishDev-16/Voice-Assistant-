@@ -1,10 +1,13 @@
 "use client";
 
-import { Phone, PhoneMissed, PhoneIncoming, ArrowRight, Gauge } from "lucide-react";
-import { useAuth } from "@clerk/nextjs";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Phone, PhoneMissed, PhoneIncoming, ArrowRight, Gauge, Brain, Target } from "lucide-react";
+import { useAuth, useUser } from "@clerk/nextjs";
 import useSWR from "swr";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { Launchpad } from "@/components/dashboard/launchpad";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 const fetcher = (url: string) => fetch(`${API_URL}${url}`).then(r => r.json());
@@ -44,25 +47,83 @@ function SentimentBadge({ sentiment }: { sentiment?: string }) {
 }
 
 export default function DashboardPage() {
-  const { userId } = useAuth();
+  const { isLoaded, userId, getToken } = useAuth();
+  const { user } = useUser();
+  const router = useRouter();
+
+  // Optimized fetcher with Auth
+  const fetcher = async (url: string) => {
+    const token = await getToken();
+    const res = await fetch(`${API_URL}${url}`, {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+      }
+    });
+    if (!res.ok) throw new Error("Failed to fetch");
+    return res.json();
+  };
+  
   const { data: stats } = useSWR(userId ? `/api/dashboard/stats?businessId=${userId}` : null, fetcher);
   const { data: profile } = useSWR(userId ? `/api/profile?clerkId=${userId}` : null, fetcher);
 
+  useEffect(() => {
+    if (isLoaded && !userId) {
+      router.push("/");
+      return;
+    }
+
+    if (isLoaded && user) {
+      const plan = user.publicMetadata?.plan;
+      const isOnboarded = user.publicMetadata?.isOnboarded;
+
+      // 1. If NO plan is active, redirect to Pricing (landing)
+      if (!plan) {
+        router.push("/#pricing");
+        return;
+      }
+
+      // 2. If plan exists but onboarding incomplete, redirect to /onboarding
+      if (isOnboarded === false) {
+        router.push("/onboarding");
+        return;
+      }
+    }
+  }, [isLoaded, userId, user, router]);
+
   const statCards = [
-    { label: "Total Voice Traffic", value: stats?.totalCalls ?? "—", icon: Phone, color: "text-maroon-400" },
-    { label: "Goal Completion", value: stats?.completedCalls ?? "—", icon: Gauge, color: "text-green-400" },
-    { label: "Missed Opportunities", value: stats?.missedCalls ?? "—", icon: PhoneMissed, color: "text-red-400" },
-    { label: "Live Active Sessions", value: stats?.inProgressCalls ?? "—", icon: PhoneIncoming, color: "text-yellow-400" },
+    { label: "Intelligence Gathered", value: stats?.totalCalls ?? "—", icon: Brain, color: "text-maroon-400" },
+    { label: "Conversion Velocity", value: stats?.completedCalls ?? "—", icon: Gauge, color: "text-green-400" },
+    { label: "Predictive Leads", value: stats?.missedCalls ?? "—", icon: Target, color: "text-red-400" },
+    { label: "Active Analyzers", value: stats?.inProgressCalls ?? "—", icon: PhoneIncoming, color: "text-yellow-400" },
   ];
 
   const usage = stats?.usage;
+
+  const isStarterZeroState = 
+    user?.publicMetadata?.plan === 'starter' && 
+    (stats?.totalCalls === 0 || !stats?.totalCalls);
+
+  if (isStarterZeroState) {
+    return (
+      <div className="p-6">
+        <Launchpad 
+          businessName={profile?.businessName || "Your Business"} 
+          twilioNumber={profile?.twilioPhoneNumber || "+1-XXX-XXX-XXXX"} 
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 p-6">
       <div className="flex justify-between items-end">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white bg-gradient-to-r from-white to-zinc-500 bg-clip-text text-transparent">Nerve Center</h1>
-          <p className="text-sm text-zinc-500 mt-1 font-medium italic">AgentFlow AI is standing by and attending your business calls.</p>
+          <h1 className="text-3xl font-extrabold tracking-tight text-white bg-gradient-to-r from-white to-zinc-500 bg-clip-text text-transparent">
+            {profile?.businessName || 'Nerve Center'}
+          </h1>
+          <p className="text-sm text-zinc-500 mt-1 font-medium italic">
+            {profile?.businessName ? `AgentFlow AI is standing by for ${profile.businessName}.` : "AgentFlow AI is standing by and attending your business calls."}
+          </p>
         </div>
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 text-[10px] font-bold text-green-400 uppercase tracking-widest animate-pulse">
            <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
@@ -103,7 +164,7 @@ export default function DashboardPage() {
               <h3 className="font-bold text-xl text-white tracking-tight">Intelligence Pulse</h3>
               <p className="text-[10px] text-zinc-500 font-medium uppercase tracking-widest mt-0.5">Real-time AI activity log</p>
             </div>
-            <Link href="/dashboard/calls" className="p-2 rounded-full bg-white/5 hover:bg-maroon-500/20 text-maroon-400 transition-all">
+            <Link href="/dashboard/intelligence" className="p-2 rounded-full bg-white/5 hover:bg-maroon-500/20 text-maroon-400 transition-all">
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -186,6 +247,10 @@ export default function DashboardPage() {
 
               {/* Agent info */}
               <div className="space-y-2 pt-2 border-t border-white/5">
+                <div className="flex justify-between text-sm">
+                  <span className="text-zinc-400">Business Name</span>
+                  <span className="text-white truncate max-w-[150px]">{profile?.businessName || '—'}</span>
+                </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-zinc-400">Business Type</span>
                   <span className="text-white capitalize">{profile?.businessType || '—'}</span>

@@ -24,17 +24,18 @@ export function TubesBackground({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const tubesRef = useRef<any>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Use a ref for cleanup to handle the async init closure correctly
+  const cleanupRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     let mounted = true;
-    let cleanup: (() => void) | undefined;
 
     const initTubes = async () => {
       if (!canvasRef.current) return;
 
       try {
-        // We use the specific local package build for the exact effect.
-        // Dynamic import inside useEffect ensures the module is only evaluated in the browser.
         // @ts-ignore
         const module = await import('threejs-components/build/cursors/tubes1.min.js');
         const TubesCursor = module.default;
@@ -54,20 +55,15 @@ export function TubesBackground({
         tubesRef.current = app;
         setIsLoaded(true);
 
-        // Handle resize
         const handleResize = () => {
-          if (app && app.resize) {
-            app.resize();
-          }
+          if (app?.resize) app.resize();
         };
 
         window.addEventListener('resize', handleResize);
         
-        cleanup = () => {
+        cleanupRef.current = () => {
           window.removeEventListener('resize', handleResize);
-          if (app && app.destroy) {
-             app.destroy();
-          }
+          if (app?.destroy) app.destroy();
         };
 
       } catch (error) {
@@ -79,14 +75,57 @@ export function TubesBackground({
 
     return () => {
       mounted = false;
-      if (cleanup) cleanup();
+      if (cleanupRef.current) {
+        cleanupRef.current();
+        cleanupRef.current = null;
+      }
     };
   }, []);
+
+  // Performance Optimization: Pause/Resume based on visibility
+  useEffect(() => {
+    if (!tubesRef.current) return;
+
+    const onVisibilityChange = () => {
+      const isHidden = document.hidden;
+      if (tubesRef.current) {
+          // Some versions of threejs-components use stop/start or pause/play
+          if (isHidden) {
+              tubesRef.current?.pause?.();
+              tubesRef.current?.stop?.();
+          } else {
+              tubesRef.current?.play?.();
+              tubesRef.current?.start?.();
+          }
+      }
+    };
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!tubesRef.current) return;
+        if (!entry.isIntersecting) {
+            tubesRef.current?.pause?.();
+            tubesRef.current?.stop?.();
+        } else {
+            tubesRef.current?.play?.();
+            tubesRef.current?.start?.();
+        }
+      },
+      { threshold: 0 }
+    );
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    if (containerRef.current) observer.observe(containerRef.current);
+
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      if (containerRef.current) observer.unobserve(containerRef.current);
+    };
+  }, [isLoaded]); // Depend on isLoaded to ensure tubesRef is populated
 
   const handleClick = () => {
     if (!enableClickInteraction || !tubesRef.current || !tubesRef.current.tubes) return;
     
-    // Check if the methods exist before calling them
     if (tubesRef.current.tubes.setColors) {
         const colors = randomColors(3);
         tubesRef.current.tubes.setColors(colors);
@@ -100,12 +139,13 @@ export function TubesBackground({
 
   return (
     <div 
+      ref={containerRef}
       className={cn("relative w-full h-full min-h-[90vh] overflow-hidden bg-[#030712] flex items-center justify-center", className)}
       onClick={handleClick}
     >
       <canvas 
         ref={canvasRef} 
-        className="absolute inset-0 w-full h-full block"
+        className={cn("absolute inset-0 w-full h-full block transition-opacity duration-1000", isLoaded ? "opacity-100" : "opacity-0")}
         style={{ touchAction: 'none' }}
       />
       

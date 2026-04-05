@@ -22,7 +22,7 @@ interface CallLog {
 }
 
 export default function CallsPage() {
-  const { userId } = useAuth();
+  const { userId, getToken } = useAuth();
   const [calls, setCalls] = useState<CallLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCall, setSelectedCall] = useState<CallLog | null>(null);
@@ -34,9 +34,11 @@ export default function CallsPage() {
     
     const fetchData = async () => {
       try {
+        const token = await getToken();
+        const headers = { "Authorization": `Bearer ${token}` };
         const [callsRes, statsRes] = await Promise.all([
-          fetch(`${API_URL}/api/calls?businessId=${userId}`),
-          fetch(`${API_URL}/api/calls/stats?businessId=${userId}`)
+          fetch(`${API_URL}/api/calls?businessId=${userId}`, { headers }),
+          fetch(`${API_URL}/api/calls/stats?businessId=${userId}`, { headers })
         ]);
         if (callsRes.ok) setCalls(await callsRes.json());
         if (statsRes.ok) setStats(await statsRes.json());

@@ -3,10 +3,22 @@
 import { Search, Filter, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import useSWR from "swr";
-import { fetcher } from "@/lib/api";
+import { useAuth } from "@clerk/nextjs";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function ConversationsPage() {
-  const { data: conversations, error } = useSWR("/dashboard/conversations", fetcher);
+  const { getToken } = useAuth();
+
+  const authFetcher = async (url: string) => {
+    const token = await getToken();
+    const res = await fetch(`${API_URL}/api${url}`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    return res.json();
+  };
+
+  const { data: conversations, error } = useSWR("/dashboard/conversations", authFetcher);
   const isLoading = !conversations && !error;
 
   return (

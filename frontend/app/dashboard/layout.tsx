@@ -16,21 +16,24 @@ export default function DashboardLayout({
 
   useEffect(() => {
     if (isLoaded && user) {
-      const userPlan = user.publicMetadata.plan;
-      if (!userPlan) {
-        // User has not paid yet, enforce paywall
+      const plan = user.publicMetadata.plan;
+      const isOnboarded = user.publicMetadata.isOnboarded;
+
+      // 1. Mandatory Plan Check (Paywall)
+      if (!plan) {
         router.push('/#pricing');
-      } else if (userPlan === 'starter') {
-        // Starter users are restricted to their own dashboard
-        router.push('/starter-home');
+        return;
+      }
+
+      // 2. Mandatory Onboarding Check
+      if (isOnboarded === false) {
+        router.push('/onboarding');
+        return;
       }
     }
   }, [isLoaded, user, router]);
 
-  if (!isLoaded) return null;
-
-  const plan = user?.publicMetadata?.plan;
-  if (!plan || plan === 'starter') return null; // Avoid UI flashing while Next.js redirects
+  if (!isLoaded || !user?.publicMetadata?.plan) return null;
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-[#050505] text-slate-50 selection:bg-maroon-500/30 relative">

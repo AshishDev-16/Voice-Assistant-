@@ -1,10 +1,14 @@
 import { Router } from 'express';
-import { getDashboardStats, getAppointments, getUsage } from '../controllers/dashboard.controller';
+import { getDashboardStats, getIntelligence, getUsage } from '../controllers/dashboard.controller';
+import { requireAuth } from '../middleware/auth.middleware';
 
 const router = Router();
 
+// Apply requireAuth to all dashboard routes
+router.use(requireAuth);
+
 router.get('/stats', getDashboardStats);
-router.get('/appointments', getAppointments);
+router.get('/intelligence', getIntelligence);
 router.get('/usage', getUsage);
 
 export default router;

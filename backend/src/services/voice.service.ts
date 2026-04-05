@@ -3,7 +3,8 @@ import { Server } from 'http';
 import logger from '../utils/logger';
 import { CallLog } from '../models/CallLog';
 import { User } from '../models/User';
-import { generateAiResponse } from './ai.service';
+import { Business } from '../models/Business';
+import { generateAiResponse, generateCallIntelligence } from './ai.service';
 
 export const initializeWebSocket = (server: Server) => {
   const wss = new WebSocketServer({ server, path: '/api/voice/stream' });
@@ -46,10 +47,10 @@ export const initializeWebSocket = (server: Server) => {
               callLogId = callLog._id.toString();
               logger.info(`CallLog created: ${callLogId}`);
               
-              // Increment call count for the business
+              // Increment call count for the user's monthly usage
               await User.findOneAndUpdate(
                 { clerkId: businessId },
-                { $inc: { callCount: 1 } }
+                { $inc: { monthlyCallCount: 1 } }
               );
             } catch (dbErr) {
               logger.error('Failed to create CallLog', dbErr);
@@ -69,40 +70,28 @@ export const initializeWebSocket = (server: Server) => {
             // Finalize the call log
             if (callLogId) {
               try {
-                const user = await User.findOne({ clerkId: businessId });
-                const summaryPrompt = `Summarize this phone call transcript concisely. Also extract structured data based on the business type "${user?.businessType || 'general'}".
+                const business = await Business.findOne({ ownerId: businessId });
                 
-                Categorize the sentiment/result as one of: 'positive', 'neutral', 'negative', or 'lead' (use 'lead' if they provided all contact/booking details or placed an order).
-                
-Transcript:
-${transcriptBuffer.map(t => `${t.role}: ${t.text}`).join('\n')}
-
-Return a JSON object with: { "summary": "...", "outcome": "...", "sentiment": "...", "extractedData": { ... } }`;
-
-                const aiSummaryResponse = await generateAiResponse(summaryPrompt, callerNumber);
-
-                let parsedSummary = { summary: '', outcome: '', sentiment: 'neutral', extractedData: {} };
-                try {
-                  const jsonMatch = aiSummaryResponse.match(/\{[\s\S]*\}/);
-                  if (jsonMatch) {
-                    parsedSummary = JSON.parse(jsonMatch[0]);
-                  }
-                } catch {
-                  parsedSummary.summary = aiSummaryResponse;
-                }
+                // Advanced Pro-Plan Intelligence
+                const intel = await generateCallIntelligence(
+                  transcriptBuffer, 
+                  business?.type || 'general',
+                  business?.aiConfig?.extractionSchema || {}
+                );
 
                 await CallLog.findByIdAndUpdate(callLogId, {
                   status: 'completed',
                   transcript: transcriptBuffer,
-                  summary: parsedSummary.summary,
-                  outcome: parsedSummary.outcome,
-                  sentiment: parsedSummary.sentiment || 'neutral',
-                  extractedData: parsedSummary.extractedData,
+                  summary: intel.summary,
+                  outcome: intel.outcome,
+                  sentiment: intel.sentiment || 'neutral',
+                  leadScore: intel.leadScore || 0,
+                  extractedData: intel.extractedData,
                   recordingUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", // Mock recording for UI demo
                   duration: Math.floor((Date.now() - new Date().getTime()) / 1000),
                   updatedAt: new Date()
                 });
-                logger.info(`CallLog ${callLogId} finalized.`);
+                logger.info(`CallLog ${callLogId} finalized with Intelligence Score: ${intel.leadScore}`);
               } catch (err) {
                 logger.error('Error finalizing CallLog', err);
               }

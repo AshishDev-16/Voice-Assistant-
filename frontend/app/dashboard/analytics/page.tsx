@@ -9,7 +9,19 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 const fetcher = (url: string) => fetch(`${API_URL}${url}`).then(r => r.json());
 
 export default function AnalyticsPage() {
-  const { userId } = useAuth();
+  const { userId, getToken } = useAuth();
+
+  const fetcher = async (url: string) => {
+    const token = await getToken();
+    const res = await fetch(`${API_URL}${url}`, {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+      }
+    });
+    if (!res.ok) throw new Error("Failed to fetch analytics");
+    return res.json();
+  };
+
   const { data: stats } = useSWR(userId ? `/api/calls/stats?businessId=${userId}` : null, fetcher);
 
   const totalCalls = stats?.totalCalls || 0;
