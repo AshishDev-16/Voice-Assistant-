@@ -2,32 +2,44 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { useTheme } from 'next-themes';
 
-// Helper for random colors
-const randomColors = (count: number) => {
-  return new Array(count)
-    .fill(0)
-    .map(() => "#" + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0'));
+// Sapphire & Indigo Palette
+const THEME_COLORS = {
+  dark: {
+    tubes: ["#4f46e5", "#6366f1", "#818cf8"], // Indigo range
+    lights: ["#4f46e5", "#818cf8", "#3b82f6", "#4f46e5"],
+  },
+  light: {
+    tubes: ["#2563eb", "#3b82f6", "#60a5fa"], // Sapphire/Royal Blue range
+    lights: ["#2563eb", "#60a5fa", "#93c5fd", "#2563eb"],
+  }
 };
 
 interface TubesBackgroundProps {
   children?: React.ReactNode;
   className?: string;
   enableClickInteraction?: boolean;
+  canvasOpacity?: number;
 }
 
 export function TubesBackground({ 
   children, 
   className,
-  enableClickInteraction = true 
+  enableClickInteraction = true,
+  canvasOpacity = 0.8
 }: TubesBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const tubesRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { theme, resolvedTheme } = useTheme();
   
   // Use a ref for cleanup to handle the async init closure correctly
   const cleanupRef = useRef<(() => void) | null>(null);
+
+  const currentTheme = (resolvedTheme || theme || 'dark') as 'dark' | 'light';
+  const colors = THEME_COLORS[currentTheme];
 
   useEffect(() => {
     let mounted = true;
@@ -44,10 +56,10 @@ export function TubesBackground({
 
         const app = TubesCursor(canvasRef.current, {
           tubes: {
-            colors: ["#10b981", "#059669", "#34d399"],
+            colors: colors.tubes,
             lights: {
               intensity: 600,
-              colors: ["#10b981", "#06b6d4", "#22d3ee", "#10b981"]
+              colors: colors.lights
             }
           }
         });
@@ -82,14 +94,26 @@ export function TubesBackground({
     };
   }, []);
 
+  // Sync colors when theme changes
+  useEffect(() => {
+    if (!tubesRef.current || !isLoaded) return;
+
+    if (tubesRef.current.tubes?.setColors) {
+      tubesRef.current.tubes.setColors(colors.tubes);
+    }
+    
+    if (tubesRef.current.tubes?.setLightsColors) {
+      tubesRef.current.tubes.setLightsColors(colors.lights);
+    }
+  }, [currentTheme, isLoaded]);
+
   // Performance Optimization: Pause/Resume based on visibility
   useEffect(() => {
-    if (!tubesRef.current) return;
+    if (!tubesRef.current || !isLoaded) return;
 
     const onVisibilityChange = () => {
       const isHidden = document.hidden;
       if (tubesRef.current) {
-          // Some versions of threejs-components use stop/start or pause/play
           if (isHidden) {
               tubesRef.current?.pause?.();
               tubesRef.current?.stop?.();
@@ -121,32 +145,20 @@ export function TubesBackground({
       document.removeEventListener("visibilitychange", onVisibilityChange);
       if (containerRef.current) observer.unobserve(containerRef.current);
     };
-  }, [isLoaded]); // Depend on isLoaded to ensure tubesRef is populated
-
-  const handleClick = () => {
-    if (!enableClickInteraction || !tubesRef.current || !tubesRef.current.tubes) return;
-    
-    if (tubesRef.current.tubes.setColors) {
-        const colors = randomColors(3);
-        tubesRef.current.tubes.setColors(colors);
-    }
-    
-    if (tubesRef.current.tubes.setLightsColors) {
-        const lightsColors = randomColors(4);
-        tubesRef.current.tubes.setLightsColors(lightsColors);
-    }
-  };
+  }, [isLoaded]);
 
   return (
     <div 
       ref={containerRef}
-      className={cn("relative w-full h-full min-h-[90vh] overflow-hidden bg-[#030712] flex items-center justify-center", className)}
-      onClick={handleClick}
+      className={cn("relative w-full h-full min-h-[90vh] overflow-hidden bg-background flex items-center justify-center transition-colors duration-700", className)}
     >
       <canvas 
         ref={canvasRef} 
         className={cn("absolute inset-0 w-full h-full block transition-opacity duration-1000", isLoaded ? "opacity-100" : "opacity-0")}
-        style={{ touchAction: 'none' }}
+        style={{ 
+            touchAction: 'none',
+            opacity: isLoaded ? (currentTheme === 'light' ? canvasOpacity * 0.7 : canvasOpacity) : 0
+        }}
       />
       
       {/* Content Overlay */}
@@ -154,8 +166,8 @@ export function TubesBackground({
         {children}
       </div>
       
-      {/* Overlay gradient to fade out bottom */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#030712] pointer-events-none" />
+      {/* Overlay gradient to fade out bottom - SOLID background in light mode to prevent "blur" */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/50 pointer-events-none transition-colors duration-700" />
     </div>
   );
 }

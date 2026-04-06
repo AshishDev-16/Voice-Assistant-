@@ -26,23 +26,23 @@ export function HowItWorksSection() {
   ];
 
   return (
-    <section id="process" className="py-32 bg-black relative border-t border-white/5 overflow-hidden">
+    <section id="process" className="py-32 bg-background relative border-t border-border overflow-hidden transition-colors duration-500">
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         <div className="text-center mb-24">
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
-            className="text-emerald-500 font-display font-black uppercase tracking-[.4em] text-[10px] mb-4"
+            className="text-primary font-black uppercase tracking-[.5em] text-[10px] mb-6"
           >
             Protocol Initialization
           </motion.div>
-          <h2 className="text-4xl md:text-6xl font-display font-black text-white tracking-tighter mb-6">
-            THREE STAGES TO <br/><span className="text-emerald-500 italic">FULL AUTONOMY</span>
+          <h2 className="text-5xl md:text-7xl font-black text-foreground tracking-tighter mb-8 leading-[0.9]">
+            THREE STAGES TO <br/><span className="text-primary italic uppercase">FULL AUTONOMY</span>
           </h2>
         </div>
 
         <div className="grid md:grid-cols-3 gap-16 relative">
-          <div className="hidden md:block absolute top-[40px] left-0 w-full h-[1px] bg-white/10 z-0" />
+          <div className="hidden md:block absolute top-[40px] left-0 w-full h-[2px] bg-border z-0 shadow-inner" />
           
           {steps.map((step, i) => (
             <motion.div 
@@ -53,14 +53,14 @@ export function HowItWorksSection() {
               viewport={{ once: true }}
               className="relative z-10 flex flex-col items-center text-center group"
             >
-              <div className="w-20 h-20 rounded-2xl bg-black border border-white/10 flex items-center justify-center mb-8 group-hover:border-emerald-500 transition-all shadow-[0_0_40px_rgba(0,0,0,1)]">
-                <div className="absolute inset-2 bg-emerald-500/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                <step.icon className="h-8 w-8 text-emerald-500 transition-transform group-hover:scale-110" />
+              <div className="w-24 h-24 rounded-[28px] bg-background border-2 border-border flex items-center justify-center mb-10 group-hover:border-primary group-hover:scale-105 transition-all shadow-xl shadow-background/10">
+                <div className="absolute inset-2 bg-primary/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                <step.icon className="h-10 w-10 text-primary transition-transform group-hover:scale-110" />
               </div>
               
-              <div className="text-xs font-mono text-emerald-800 mb-2 font-black">0{i+1}.SEQUENCE</div>
-              <h3 className="text-2xl font-display font-bold text-white mb-4 tracking-tight">{step.title}</h3>
-              <p className="text-slate-500 font-medium leading-relaxed">
+              <div className="text-[10px] font-black text-primary/60 mb-3 uppercase tracking-widest italic group-hover:text-primary transition-colors">0{i+1}.SEQUENCE</div>
+              <h3 className="text-2xl font-black text-foreground mb-4 tracking-tighter group-hover:text-primary transition-colors">{step.title}</h3>
+              <p className="text-muted-foreground font-bold leading-relaxed italic text-sm group-hover:text-foreground transition-colors max-w-[250px]">
                 {step.description}
               </p>
             </motion.div>

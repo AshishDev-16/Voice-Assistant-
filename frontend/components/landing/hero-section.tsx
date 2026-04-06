@@ -14,12 +14,12 @@ export function HeroSection() {
     offset: ["start start", "end start"],
   });
 
-  const y1 = useTransform(scrollYProgress, [0, 1], [0, 300]);
+  const y1 = useTransform(scrollYProgress, [0, 1], [0, 200]);
   const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
   return (
-    <section ref={containerRef} className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-      <TubesBackground className="opacity-80">
+    <section ref={containerRef} className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-20 transition-colors duration-700 bg-background">
+      <TubesBackground className="" canvasOpacity={0.4}>
         <div className="relative z-10 w-full max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           
           <motion.div 
@@ -30,28 +30,28 @@ export function HeroSection() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
-              className="px-4 py-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5 backdrop-blur-md mb-6 flex items-center space-x-2"
+              className="px-4 py-1.5 rounded-full border border-primary/20 bg-primary/10 backdrop-blur-md mb-6 flex items-center space-x-3 shadow-sm"
             >
-              <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400">Active Uplink</span>
+              <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse" />
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">System Online</span>
             </motion.div>
 
             <div className="relative group/title">
-              <div className="absolute -inset-10 bg-emerald-500/20 blur-[100px] rounded-full opacity-0 group-hover/title:opacity-100 transition-opacity duration-1000" />
+              <div className="absolute -inset-10 bg-primary/10 blur-[120px] rounded-full opacity-0 group-hover/title:opacity-100 transition-opacity duration-1000" />
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ 
                   type: "spring",
                   stiffness: 100,
-                  damping: 15,
+                  damping: 20,
                   delay: 0.1
                 }}
-                className="relative text-6xl md:text-8xl font-display font-black leading-[0.9] text-white mb-8 tracking-tighter"
+                className="relative text-6xl md:text-8xl font-black leading-[0.85] text-foreground mb-8 tracking-tighter"
               >
                 THE FUTURE<br/>
-                OF <span className="text-emerald-500 italic">VOICE</span><br/>
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-white to-emerald-600">IS AION</span>
+                OF <span className="text-primary italic">VOICE</span><br/>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-foreground to-primary/80">IS AION</span>
               </motion.h1>
             </div>
 
@@ -59,21 +59,21 @@ export function HeroSection() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="text-lg md:text-xl text-slate-400 max-w-lg mb-10 leading-relaxed font-medium"
+              className="text-base md:text-xl text-muted-foreground max-w-lg mb-10 leading-relaxed font-bold italic"
             >
-              The first autonomous voice engine that handles your business calls with surgical precision and uncanny human-like nuance.
+              The first autonomous AI voice engine that handles your business calls with surgical precision and uncanny human-like nuance.
             </motion.p>
 
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
-              className="flex flex-wrap gap-4"
+              className="flex flex-wrap gap-6"
             >
               <Link href="/dashboard">
-                <Button size="lg" className="h-16 px-10 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-lg group transition-all shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+                <Button size="lg" className="h-16 px-10 rounded-[20px] bg-primary hover:scale-105 active:scale-95 text-primary-foreground font-black text-[11px] uppercase tracking-[0.2em] group transition-all shadow-2xl shadow-primary/40">
                   Access Console
-                  <MoveRight className="ml-3 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  <MoveRight className="ml-4 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
             </motion.div>
@@ -88,60 +88,59 @@ export function HeroSection() {
               damping: 20,
               delay: 0.5
             }}
-            className="hidden lg:block relative group"
+            className="hidden lg:block relative group perspective-1000"
           >
-            {/* Visual Call Mockup Container */}
+            {/* Visual Call Mockup Container - Sharp glassmorphism */}
             <motion.div 
-              animate={{ y: [0, -10, 0] }}
+              animate={{ y: [0, -12, 0] }}
               transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-              className="relative w-[500px] h-[600px] rounded-[40px] border border-white/10 bg-black/40 backdrop-blur-3xl p-8 overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.8)]"
+              className="relative w-[440px] h-[540px] rounded-[32px] glass-card p-8 overflow-hidden shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] dark:shadow-2xl group-hover:shadow-primary/10 transition-all duration-500 border border-primary/10 dark:border-white/10"
             >
-              <div className="absolute inset-0 grid-pattern opacity-20" />
+              <div className="absolute inset-0 grid-pattern opacity-[0.03] dark:opacity-20" />
               
               <div className="relative flex flex-col h-full">
                 <div className="flex justify-between items-start mb-12">
-                  <div className="p-3 rounded-2xl bg-white/5 border border-white/10">
-                    <Phone className="w-6 h-6 text-emerald-500 animate-pulse" />
+                  <div className="p-3.5 rounded-[16px] bg-primary/10 border border-primary/20 shadow-inner">
+                    <Phone className="w-5 h-5 text-primary animate-pulse" />
                   </div>
                   <div className="text-right">
-                    <div className="text-[10px] uppercase font-bold text-slate-500 tracking-widest mb-1">Encrypted Line</div>
-                    <div className="text-sm font-mono text-white">+1 (234) AION-VOX</div>
+                    <div className="text-[9px] uppercase font-black text-muted-foreground tracking-[0.2em] mb-1">Encrypted Stream</div>
+                    <div className="text-xs font-mono text-foreground font-bold tracking-tighter">NODE_742-VOX</div>
                   </div>
                 </div>
 
                 <div className="flex-1 flex flex-col justify-center items-center space-y-12">
-                   <div className="w-32 h-32 rounded-full border-4 border-emerald-500/30 flex items-center justify-center relative">
-                      <div className="absolute inset-[-10px] rounded-full border border-emerald-500/20 animate-ping" />
-                      <div className="w-24 h-24 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                         <Mic className="w-10 h-10 text-emerald-500" />
+                   <div className="w-32 h-32 rounded-full border-4 border-primary/30 flex items-center justify-center relative">
+                      <div className="absolute inset-[-10px] rounded-full border-2 border-primary/20 animate-[ping_3s_infinite]" />
+                      <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center shadow-inner">
+                         <Mic className="w-10 h-10 text-primary" />
                       </div>
                    </div>
                    <div className="text-center space-y-2">
-                      <div className="text-xs uppercase font-black tracking-[0.3em] text-emerald-500">Transcribing Live</div>
-                      <div className="text-2xl font-display font-medium text-white italic">"Yes, I can schedule that..."</div>
+                       <div className="text-[9px] uppercase font-black tracking-[0.4em] text-primary">AI Streaming</div>
+                       <div className="text-3xl font-black text-foreground italic tracking-tighter transition-colors">"I'll confirm that time."</div>
                    </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 mt-auto">
-                    <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-2">
-                        <Zap className="w-5 h-5 text-gold-400" />
-                        <div className="text-[10px] font-bold text-slate-500 uppercase">Latency</div>
-                        <div className="text-lg font-mono text-white">120ms</div>
+                    <div className="p-4 rounded-[16px] bg-background/60 backdrop-blur-md border border-border/60 space-y-2 shadow-sm transition-colors">
+                        <Zap className="w-5 h-5 text-primary" />
+                        <div className="text-[9px] font-black text-muted-foreground uppercase tracking-widest leading-none">Latency</div>
+                        <div className="text-lg font-mono text-foreground font-black tracking-tighter">115ms</div>
                     </div>
-                    <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-2">
-                        <ShieldCheck className="w-5 h-5 text-emerald-500" />
-                        <div className="text-[10px] font-bold text-slate-500 uppercase">Security</div>
-                        <div className="text-lg font-mono text-white">TLS 1.3</div>
+                    <div className="p-4 rounded-[16px] bg-background/60 backdrop-blur-md border border-border/60 space-y-2 shadow-sm transition-colors">
+                        <ShieldCheck className="w-5 h-5 text-primary" />
+                        <div className="text-[9px] font-black text-muted-foreground uppercase tracking-widest leading-none">Protocol</div>
+                        <div className="text-lg font-mono text-foreground font-black tracking-tighter">v.4.0</div>
                     </div>
                 </div>
                 </div>
               </motion.div>
 
               {/* Decorative Glows */}
-              <div className="absolute -top-20 -right-20 w-64 h-64 bg-emerald-500/10 rounded-full blur-[100px]" />
-              <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-gold-400/5 rounded-full blur-[100px]" />
+              <div className="absolute -top-10 -right-10 w-64 h-64 bg-primary/10 rounded-full blur-[100px] opacity-40 dark:opacity-50 transition-opacity" />
+              <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-primary/5 rounded-full blur-[100px] opacity-20 dark:opacity-30 transition-opacity" />
             </motion.div>
-
         </div>
       </TubesBackground>
     </section>
